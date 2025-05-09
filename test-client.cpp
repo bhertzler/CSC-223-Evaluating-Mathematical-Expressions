@@ -11,22 +11,21 @@
 #include <string>
 using namespace std;
 
-int main()
+int main() 
 {
+	InfixToPostfixConverter converter;
 	string infix;
 	
 	cout << "Enter Infix Expression: ";
 	getline(cin, infix);
 
-	try
-	{
-		string postfix = InfixToPostfixConverter(infix).getPostfix();
-		cout << "Postfix Notation: " << postfix << endl;
+	try {
+		converter.convert(infix);
+		std::cout << converter.getPostfix() << endl;
 	}
-	catch (const InfixToPostfixConverter::InvalidTokenException& e)
-	{
+	catch (const exception& e) {
 		cerr << "Error: " << e.what() << endl;
 	}
-	
+
 	return 0;
 }

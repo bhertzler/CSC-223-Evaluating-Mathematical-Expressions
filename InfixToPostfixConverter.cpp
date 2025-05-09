@@ -6,107 +6,132 @@
 // Evaluating Mathematical Expressions Project
 //
 
+
 #include "InfixToPostfixConverter.h"
-#include <string>
 #include <sstream>
-#include <cctype>
 #include <stack>
+#include <cctype>
+#include <vector>
 using namespace std;
 
 void InfixToPostfixConverter::convert()
-throw (InvalidTokenException)
+throw(InvalidTokenException, MalformedExpressionException)
 {
     stack<char> op_stack;
     istringstream ss(infix);
     string token;
-    postfix = "";
+    vector<string> output;
+    bool operand_last = false;
 
-    while (ss >> token)
+    while (ss >> token) 
     {
-        
-        char ch = token[0];
-
         // Operand (number or variable)
-        if (isdigit(ch) || (isalpha(ch)) || (ch == '.' && token.length() > 1))
+        if (isdigit(token[0]) || isalpha(token[0]) || token[0] == '.') 
         {
-            postfix += token + " ";
-        }
-        // Opening parenthesis
-        else if (ch == '(')
-        {
-            op_stack.push(ch);
-        }
-        // Closing parenthesis
-        else if (ch == ')')
-        {
-            while (!op_stack.empty() && op_stack.top() != '(')
+            for (char c : token) 
             {
-                postfix += op_stack.top();
-                postfix += " ";
+                if (!isdigit(c) && !isalpha(c) && c != '.')
+                    throw InvalidTokenException("Invalid character in operand: " + token);
+            }
+            output.push_back(token);
+            operand_last = true;
+        }
+        // Left parenthesis
+        else if (token == "(") 
+        {
+            op_stack.push('(');
+            operand_last = false;
+        }
+        // Right parenthesis
+        else if (token == ")") 
+        {
+            while (!op_stack.empty() && op_stack.top() != '(') 
+            {
+                output.emplace_back(string(1, op_stack.top()));
                 op_stack.pop();
             }
             if (op_stack.empty())
-                throw InvalidTokenException();  // Unmatched ')'
-            op_stack.pop();  // Discard '('
+                throw MalformedExpressionException("Unmatched parenthesis");
+            op_stack.pop(); // remove '('
+            operand_last = true;
         }
         // Operator
-        else
+        else if (token.length() == 1 && precedence(token[0]) != -1) 
         {
+            char ch = token[0];
             int op_level = precedence(ch);
-            if (op_level == -1)
-                throw InvalidTokenException();  // Unknown character
 
-            while (!op_stack.empty())
+            if (!operand_last)
+                throw MalformedExpressionException("Operator not preceded by operand");
+
+            while (!op_stack.empty()) 
             {
                 char top = op_stack.top();
                 int top_level = precedence(top);
-
-                // Check associativity: '^' is right-associative
-                if ((op_level < top_level) || (op_level == top_level && ch != '^'))
+                if ((op_level < top_level) || (op_level == top_level && ch != '^')) 
                 {
-                    postfix += top;
-                    postfix += " ";
+                    output.emplace_back(string(1, top));
                     op_stack.pop();
                 }
-                else
+                else 
                 {
                     break;
                 }
             }
             op_stack.push(ch);
+            operand_last = false;
+        }
+        else 
+        {
+            throw InvalidTokenException("Unknown token: " + token);
         }
     }
 
-    // Pop any remaining operators
-    while (!op_stack.empty())
+    if (!operand_last)
+        throw MalformedExpressionException("Expression ends with operator");
+
+    while (!op_stack.empty()) 
     {
         if (op_stack.top() == '(')
-            throw InvalidTokenException();  // Unmatched '('
-        postfix += op_stack.top();
-        postfix += " ";
+            throw MalformedExpressionException("Unmatched parenthesis");
+        output.emplace_back(string(1, op_stack.top()));
         op_stack.pop();
     }
+
+    ostringstream oss;
+    for (size_t i = 0; i < output.size(); ++i) 
+    {
+        oss << output[i];
+        if (i != output.size() - 1)
+            oss << " ";
+    }
+    postfix = oss.str();
 }
 
-void InfixToPostfixConverter::convert(string infix_str)
+void InfixToPostfixConverter::convert(string infix_str) 
 {
-	setInfix(infix_str);
-	convert();
+    setInfix(infix_str);
+    convert();
 }
 
-int InfixToPostfixConverter::precedence(char op)
+void InfixToPostfixConverter::setInfix(string infix_str) 
 {
-	switch (op)
-	{
-	case '+':
-	case '-':
-		return 1;
-	case '*':
-	case '/':
-		return 2;
-	case '^':
-		return 3;
-	default:
-		return -1;
-	}
+    infix = move(infix_str);
+}
+
+int InfixToPostfixConverter::precedence(char op) 
+{
+    switch (op) 
+    {
+    case '+':
+    case '-':
+        return 1;
+    case '*':
+    case '/':
+        return 2;
+    case '^':
+        return 3;
+    default:
+        return -1;
+    }
 }

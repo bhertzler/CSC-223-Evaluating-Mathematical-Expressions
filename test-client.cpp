@@ -6,26 +6,39 @@
 // Evaluating Mathematical Expressions Project
 //
 
-#include "InfixToPostfixConverter.h"
+#include "PostFixEvaluator.h"
 #include <iostream>
+#include <fstream>
 #include <string>
 using namespace std;
 
+#define FILE_NAME "RpnData.txt"
+
 int main() 
 {
-	InfixToPostfixConverter converter;
-	string infix;
-	
-	cout << "Enter Infix Expression: ";
-	getline(cin, infix);
+	ifstream f(FILE_NAME);
+	string line;
 
-	try {
-		converter.convert(infix);
-		std::cout << converter.getPostfix() << endl;
+	if (f.is_open())
+	{
+		while (getline(f, line))
+		{
+			string output;
+			try
+			{
+				double result = PostFixEvaluator(line).getResult();
+				output = to_string(result);
+			}
+			catch (const exception& e)
+			{
+				output = e.what();
+			}
+			cout << line << " = " << output << endl;
+		}
+		f.close();
 	}
-	catch (const exception& e) {
-		cerr << "Error: " << e.what() << endl;
-	}
+	else
+		cerr << "Invalid File" << endl;
 
 	return 0;
 }

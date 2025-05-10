@@ -128,10 +128,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="InfixToPostfixConverter.h" />
+    <ClInclude Include="PostFixEvaluator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="InfixToPostfixConverter.cpp" />
+    <ClCompile Include="PostFixEvaluator.cpp" />
     <ClCompile Include="test-client.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="RpnData.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

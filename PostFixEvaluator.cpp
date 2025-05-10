@@ -15,7 +15,7 @@ using namespace std;
 
 #define OPERATORS "+-*/^"
 
-void PostFixEvaluator::evaluate()
+void PostFixEvaluator::evaluate() throw (InvalidExpressionException)
 {
 	istringstream ss(postfix);
 	string token;
